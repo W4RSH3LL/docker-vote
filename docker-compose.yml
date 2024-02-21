@@ -1,0 +1,80 @@
+version: '3'
+
+#services container
+
+services:
+  vote:
+    build: ./vote
+    container_name: services
+    ports:
+      - "8081:80"
+    volumes:
+      - ./vote:/app
+    networks:
+      - frontend
+      - backend
+
+#result container
+
+  result:
+    build: ./result
+    container_name: results
+    ports:
+      - "8000:80"
+    volumes:
+      - ./result:/app
+    networks:
+      - frontend
+      - backend
+
+#worker container
+
+  worker:
+    build: ./worker
+    container_name: worker
+    networks:
+      - backend
+
+#proxy container
+
+  proxy:
+    build: ./proxy
+    container_name: proxy
+    ports:
+      - "8080:80"
+    networks:
+      - frontend
+    depends_on:
+      - vote
+      - result
+
+#redis container
+
+  redis:
+    build: ./redis
+    container_name: redis
+    networks:
+      - backend
+
+#db container
+
+  db:
+    build: ./db
+    container_name: db
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    
+#networks
+
+networks:
+  frontend:
+    # Network for frontend services (vote, result, proxy)
+  backend:
+    # Network for backend services (redis, db)
+    
+    
